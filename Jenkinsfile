@@ -34,7 +34,7 @@ pipeline {
                         // Create a Docker image object
                         def denodoImage = docker.image("${env.DOCKER_REGISTRY}/${env.GOLDEN_PROJECT_NAME}/denodo:latest")
                         // Run the container with the script mounted and execute the Python script
-                        denodoImage.inside("-u denodo -v ${env.WORKSPACE}:/tmp") {
+                        denodoImage.inside("-v ${env.WORKSPACE}:/tmp") {
                             sh """
 								whoami
 								/opt/denodo/bin/export.sh --server //datamgmtdemo01.eastasia.cloudapp.azure.com:30999/admin --login admin --password admin --singleuser --repository-element admin:view:/data_catalog_draft --repository /tmp
