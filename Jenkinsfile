@@ -64,10 +64,10 @@ pipeline {
 //        }
     }
 
-    post {
-        always {
-            // Optional: clean up
-           // cleanWs()
-        }
-    }
+//    post {
+//        always {
+//            // Optional: clean up
+//            cleanWs()
+//        }
+//    }
 }
