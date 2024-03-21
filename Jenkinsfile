@@ -36,7 +36,6 @@ pipeline {
                         // Run the container with the script mounted and execute the Python script
                         denodoImage.inside("-v ${env.WORKSPACE}:/tmp") {
                             sh """
-								whoami
 								/opt/denodo/bin/export.sh --server //datamgmtdemo01.eastasia.cloudapp.azure.com:30999/admin --login admin --password admin --singleuser --repository-element admin:view:/data_catalog_draft --repository /tmp
 							   """
                         }
