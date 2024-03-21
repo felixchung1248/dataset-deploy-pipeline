@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'TICKET_ID', description: 'Ticket ID')
+        string(name: 'DATASET_NAME', description: 'Dataset name')
     }
 
     environment {
@@ -18,8 +18,8 @@ pipeline {
         stage('Pre-flight Check') {
             steps {
                 script {
-                    if (!params.TICKET_ID) {
-                        error "The TICKET_ID parameter is missing. Please provide the ticket ID."
+                    if (!params.DATASET_NAME) {
+                        error "The DATASET_NAME parameter is missing. Please provide the dataset name."
                     }
                 }
             }
@@ -36,8 +36,8 @@ pipeline {
                         // Run the container with the script mounted and execute the Python script
                         denodoImage.inside("-v ${env.WORKSPACE}:/tmp") {
                             sh """
-								/opt/denodo/bin/export.sh --server //datamgmtdemo01.eastasia.cloudapp.azure.com:31999/admin --login admin --password admin --singleuser --repository-element admin:view:/data_catalog_draft_count --repository /tmp
-								/opt/denodo/bin/import.sh --server //datamgmtdemo01.eastasia.cloudapp.azure.com:30999/admin?admin@admin --singleuser --repository /tmp --element /databases/admin/views/data_catalog_draft_count.vql
+								/opt/denodo/bin/export.sh --server //${env.DENODO_META_SANDBOX_URL}/admin --login admin --password admin --singleuser --repository-element admin:view:/${env.DATASET_NAME} --repository /tmp
+								/opt/denodo/bin/import.sh --server //${env.DENODO_META_PROD_URL}/admin?admin@admin --singleuser --repository /tmp --element /databases/admin/views/${env.DATASET_NAME}.vql
 							   """
                         }
                     }
