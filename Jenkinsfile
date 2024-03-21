@@ -37,6 +37,7 @@ pipeline {
                         denodoImage.inside("-v ${env.WORKSPACE}:/tmp") {
                             sh """
 								/opt/denodo/bin/export.sh --server //datamgmtdemo01.eastasia.cloudapp.azure.com:30999/admin --login admin --password admin --singleuser --repository-element admin:view:/data_catalog_draft --repository /tmp
+								/opt/denodo/bin/import.sh --server //datamgmtdemo01.eastasia.cloudapp.azure.com:31999/admin?admin@admin --singleuser --repository /tmp
 							   """
                         }
                     }
