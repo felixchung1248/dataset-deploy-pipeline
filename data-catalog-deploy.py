@@ -46,6 +46,7 @@ zammad_usr = parameters['zammad_usr']
 zammad_pw = parameters['zammad_pw']
 zammad_url = parameters['zammad_url']
 dataset = parameters['dataset']
+datahub_url = parameters['datahub_url']
 
 response = requests.get(
             f"{zammad_url}/api/v1/ticket_articles/by_ticket/{ticketId}",
@@ -108,5 +109,5 @@ event: MetadataChangeProposalWrapper = MetadataChangeProposalWrapper(
     ),
 )
 # Create rest emitter
-rest_emitter = DatahubRestEmitter(gms_server="http://datamgmtdemo01.eastasia.cloudapp.azure.com:31080", token=token)
+rest_emitter = DatahubRestEmitter(gms_server=datahub_url, token=token)
 rest_emitter.emit(event)
