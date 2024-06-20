@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        DATAHUB_TOKEN = credentials('datahub-token')
+        // DATAHUB_TOKEN = credentials('datahub-token')
         ZAMMAD_USR = credentials('zammad-usr')
         ZAMMAD_PW = credentials('zammad-pw')
     }
