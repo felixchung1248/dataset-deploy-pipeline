@@ -46,30 +46,30 @@ pipeline {
             }
         }
 		
-		stage('Deploy data catalog dataset') {
-           steps {
-               script {					
+		// stage('Deploy data catalog dataset') {
+  //          steps {
+  //              script {					
 					
-                   // Run the Python script within the Docker container
-                   docker.withRegistry("https://${env.DOCKER_REGISTRY}", env.DOCKER_REGISTRY_CREDENTIALS_ID) {
-                       // Create a Docker image object
-                       def pythonImage = docker.image("${env.DOCKER_REGISTRY}/${env.GOLDEN_PROJECT_NAME}/${env.GOLDEN_DOCKER_IMAGE}:${env.GOLDEN_DOCKER_TAG}")
-                       // Run the container with the script mounted and execute the Python script
-                       pythonImage.inside("-v ${env.WORKSPACE}:/app/workspace") {
-                           sh """
-                               python3 /app/workspace/data-catalog-deploy.py ticket_id=${env.TICKET_ID} token=${env.DATAHUB_TOKEN} zammad_usr=${env.ZAMMAD_USR} zammad_pw=${env.ZAMMAD_PW} zammad_url=${env.ZAMMAD_URL} dataset=${env.DATASET_NAME} datahub_url=${env.DATAHUB_URL}
-							   """
-                       }
-                   }
-               }
-           }
-       }
+  //                  // Run the Python script within the Docker container
+  //                  docker.withRegistry("https://${env.DOCKER_REGISTRY}", env.DOCKER_REGISTRY_CREDENTIALS_ID) {
+  //                      // Create a Docker image object
+  //                      def pythonImage = docker.image("${env.DOCKER_REGISTRY}/${env.GOLDEN_PROJECT_NAME}/${env.GOLDEN_DOCKER_IMAGE}:${env.GOLDEN_DOCKER_TAG}")
+  //                      // Run the container with the script mounted and execute the Python script
+  //                      pythonImage.inside("-v ${env.WORKSPACE}:/app/workspace") {
+  //                          sh """
+  //                              python3 /app/workspace/data-catalog-deploy.py ticket_id=${env.TICKET_ID} token=${env.DATAHUB_TOKEN} zammad_usr=${env.ZAMMAD_USR} zammad_pw=${env.ZAMMAD_PW} zammad_url=${env.ZAMMAD_URL} dataset=${env.DATASET_NAME} datahub_url=${env.DATAHUB_URL}
+		// 					   """
+  //                      }
+  //                  }
+  //              }
+  //          }
+  //      }
     }
 
    post {
        always {
            // Optional: clean up
-           cleanWs()
+           // cleanWs()
        }
    }
 }
