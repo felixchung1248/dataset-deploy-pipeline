@@ -29,7 +29,8 @@ pipeline {
         stage('Run Dataset deploy') {
             steps {
                 script {					
-		    def dnsIP = sh(script: "kubectl get service -n kube-system kube-dns -o jsonpath='{.spec.clusterIP}'", returnStdout: true).trim()		
+		    def dnsIP = sh(script: "kubectl get service -n kube-system kube-dns -o jsonpath='{.spec.clusterIP}'", returnStdout: true).trim()	
+		    sh "chmod -R 777 ${env.WORKSPACE}"
                     // Run the Python script within the Docker container
                     docker.withRegistry("https://${env.DOCKER_REGISTRY}") {
                         // Create a Docker image object
