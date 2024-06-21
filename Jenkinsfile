@@ -29,13 +29,13 @@ pipeline {
         stage('Run Dataset deploy') {
             steps {
                 script {					
-					
+		    def dnsIP = sh(script: "kubectl get service -n kube-system kube-dns -o jsonpath='{.spec.clusterIP}'", returnStdout: true).trim()		
                     // Run the Python script within the Docker container
                     docker.withRegistry("https://${env.DOCKER_REGISTRY}") {
                         // Create a Docker image object
                         def denodoImage = docker.image("${env.DOCKER_REGISTRY}/${env.GOLDEN_PROJECT_NAME}/denodo:latest")
                         // Run the container with the script mounted and execute the Python script
-                        denodoImage.inside("-v ${env.WORKSPACE}:/tmp") {
+                        denodoImage.inside("-v ${env.WORKSPACE}:/tmp --dns=${dnsIP}") {
                             sh """
 								/opt/denodo/bin/export.sh --server //${env.DENODO_META_SANDBOX_URL}/admin --login admin --password admin --singleuser --repository-element admin:view:/${env.DATASET_NAME} --repository /tmp
 								/opt/denodo/bin/import.sh --server //${env.DENODO_META_PROD_URL}/admin?admin@admin --singleuser --repository /tmp --element /databases/admin/views/${env.DATASET_NAME}.vql
