@@ -31,7 +31,7 @@ pipeline {
                 script {					
 					
                     // Run the Python script within the Docker container
-                    docker.withRegistry("https://${env.DOCKER_REGISTRY}", env.DOCKER_REGISTRY_CREDENTIALS_ID) {
+                    docker.withRegistry("https://${env.DOCKER_REGISTRY}") {
                         // Create a Docker image object
                         def denodoImage = docker.image("${env.DOCKER_REGISTRY}/${env.GOLDEN_PROJECT_NAME}/denodo:latest")
                         // Run the container with the script mounted and execute the Python script
