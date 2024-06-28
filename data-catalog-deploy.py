@@ -109,5 +109,5 @@ event: MetadataChangeProposalWrapper = MetadataChangeProposalWrapper(
     ),
 )
 # Create rest emitter
-rest_emitter = DatahubRestEmitter(gms_server=datahub_url, token=token)
+rest_emitter = DatahubRestEmitter(gms_server=datahub_url)
 rest_emitter.emit(event)
