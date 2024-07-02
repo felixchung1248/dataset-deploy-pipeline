@@ -69,7 +69,7 @@ pipeline {
                 script {					
 					
                     // Run the Python script within the Docker container
-                    docker.withRegistry("https://${env.DOCKER_REGISTRY}", env.DOCKER_REGISTRY_CREDENTIALS_ID) {
+                    docker.withRegistry("https://${env.DOCKER_REGISTRY}") {
                         // Create a Docker image object
                         def pythonImage = docker.image("${env.DOCKER_REGISTRY}/${env.GOLDEN_PROJECT_NAME}/${env.GOLDEN_DOCKER_IMAGE}:${env.GOLDEN_DOCKER_TAG}")
                         // Run the container with the script mounted and execute the Python script
