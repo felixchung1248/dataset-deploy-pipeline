@@ -48,7 +48,7 @@ pipeline {
             }
         }
 		
-		stage('Deploy data catalog dataset') {
+	stage('Deploy data catalog dataset') {
             steps {
                 script {					
 					
@@ -75,11 +75,11 @@ pipeline {
                         docker stop $CONTAINER_NAME
                         docker rm $CONTAINER_NAME
                     """
-                    }
                 }
-            }
+             }
         }
     }
+}
 
    // post {
    //     always {
