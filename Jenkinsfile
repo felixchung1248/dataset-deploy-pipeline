@@ -52,26 +52,16 @@ pipeline {
 	stage('Deploy data catalog dataset') {
             steps {
                 script {					
-					
-                    // Run the Python script within the Docker container
-           //          docker.withRegistry("https://${env.DOCKER_REGISTRY}") {
-           //              // Create a Docker image object
-           //              def pythonImage = docker.image("${env.DOCKER_REGISTRY}/${env.GOLDEN_PROJECT_NAME}/${env.GOLDEN_DOCKER_IMAGE}:${env.GOLDEN_DOCKER_TAG}")
-           //              // Run the container with the script mounted and execute the Python script
-           //              pythonImage.inside("-v ${env.WORKSPACE}:/app/workspace") {
-           //                  sh """
-           //                      python3 /app/workspace/data-catalog-deploy.py ticket_id=${env.TICKET_ID} token=${env.DATAHUB_TOKEN} zammad_usr=${env.ZAMMAD_USR} zammad_pw=${env.ZAMMAD_PW} zammad_url=${env.ZAMMAD_URL} dataset=${env.DATASET_NAME} datahub_url=${env.DATAHUB_URL}
-		 					   // """
-           //              }
-
 		    env.CONTAINER_NAME = "data_catalog_${env.BUILD_ID}"
 
                     // Run the container with necessary volumes and DNS settings, and execute the commands
                     sh """
-                        docker run --name $CONTAINER_NAME -d -v /tmp:/tmp --dns=${DNS_IP} $PYTHON_DOCKER_IMAGE tail -f /dev/null
-                        docker exec $CONTAINER_NAME sh -c "mkdir -p /tmp/${CONTAINER_NAME}; cd /tmp/${CONTAINER_NAME}; git clone https://github.com/felixchung1248/dataset-deploy-pipeline.git"
-                        docker exec $CONTAINER_NAME sh -c "python3 /tmp/${CONTAINER_NAME}/dataset-deploy-pipeline/data-catalog-deploy.py ticket_id=${env.TICKET_ID} token=${env.DATAHUB_TOKEN} zammad_usr=${env.ZAMMAD_USR} zammad_pw=${env.ZAMMAD_PW} zammad_url=${env.ZAMMAD_URL} dataset=${env.DATASET_NAME} datahub_url=${env.DATAHUB_URL}"
-                        docker exec $CONTAINER_NAME sh -c "rm -rf /tmp/${CONTAINER_NAME}"
+		    	// docker run --name $CONTAINER_NAME -d -v /tmp:/tmp --dns=${DNS_IP} $PYTHON_DOCKER_IMAGE tail -f /dev/null
+                        docker run --name $CONTAINER_NAME -d -v ${env.WORKSPACE}:/app/workspace --dns=${DNS_IP} $PYTHON_DOCKER_IMAGE tail -f /dev/null
+			docker exec $CONTAINER_NAME sh -c "cd /app/workspace; tree" 
+                        // docker exec $CONTAINER_NAME sh -c "mkdir -p /tmp/${CONTAINER_NAME}; cd /tmp/${CONTAINER_NAME}; git clone https://github.com/felixchung1248/dataset-deploy-pipeline.git"
+                        // docker exec $CONTAINER_NAME sh -c "python3 /tmp/${CONTAINER_NAME}/dataset-deploy-pipeline/data-catalog-deploy.py ticket_id=${env.TICKET_ID} token=${env.DATAHUB_TOKEN} zammad_usr=${env.ZAMMAD_USR} zammad_pw=${env.ZAMMAD_PW} zammad_url=${env.ZAMMAD_URL} dataset=${env.DATASET_NAME} datahub_url=${env.DATAHUB_URL}"
+                        // docker exec $CONTAINER_NAME sh -c "rm -rf /tmp/${CONTAINER_NAME}"
                         docker stop $CONTAINER_NAME
                         docker rm $CONTAINER_NAME
                     """
