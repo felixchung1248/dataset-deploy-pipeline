@@ -57,6 +57,7 @@ pipeline {
                     // Run the container with necessary volumes and DNS settings, and execute the commands
                     sh """
 		    	// docker run --name $CONTAINER_NAME -d -v /tmp:/tmp --dns=${DNS_IP} $PYTHON_DOCKER_IMAGE tail -f /dev/null
+       			chmod -R 777 ${env.WORKSPACE}
                         docker run --name $CONTAINER_NAME -d -v ${env.WORKSPACE}:/app/workspace --dns=${DNS_IP} $PYTHON_DOCKER_IMAGE tail -f /dev/null
 			docker exec $CONTAINER_NAME sh -c "cd /app/workspace; tree" 
                         // docker exec $CONTAINER_NAME sh -c "mkdir -p /tmp/${CONTAINER_NAME}; cd /tmp/${CONTAINER_NAME}; git clone https://github.com/felixchung1248/dataset-deploy-pipeline.git"
