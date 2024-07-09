@@ -41,7 +41,7 @@ def parse_key_value_pairs(argv):
 parameters = parse_key_value_pairs(sys.argv)
 # batchKey = parameters['batch_key']
 ticketId = parameters['ticket_id']
-token = parameters['token']
+# token = parameters['token']
 zammad_usr = parameters['zammad_usr']
 zammad_pw = parameters['zammad_pw']
 zammad_url = parameters['zammad_url']
