@@ -52,9 +52,6 @@ pipeline {
 	stage('Deploy data catalog dataset') {
             steps {
                 script {					
-		    env.CONTAINER_NAME = "data_catalog_${env.BUILD_ID}"
-
-                    // Run the container with necessary volumes and DNS settings, and execute the commands
                     sh """
                         python3 ${env.WORKSPACE}/data-catalog-deploy.py ticket_id=${env.TICKET_ID} zammad_usr=${env.ZAMMAD_USR} zammad_pw=${env.ZAMMAD_PW} zammad_url=${env.ZAMMAD_URL} dataset=${env.DATASET_NAME} datahub_url=${env.DATAHUB_URL}
                     """
