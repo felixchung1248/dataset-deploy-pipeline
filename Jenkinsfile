@@ -57,7 +57,7 @@ pipeline {
                     // Run the container with necessary volumes and DNS settings, and execute the commands
 		    sh """
       			docker run --name $CONTAINER_NAME -d -v /tmp:/tmp -v ${env.WORKSPACE}:/app/workspace --dns=${DNS_IP} $PYTHON_DOCKER_IMAGE tail -f /dev/null
-	 		cd ${env.WORKSPACE}; cp -f * /tmp
+	 		cd ${env.WORKSPACE}; ls -l; cp -f * /tmp
 	 		docker exec $CONTAINER_NAME sh -c "cd /tmp; ls -l" 
     			docker stop $CONTAINER_NAME
        			docker rm $CONTAINER_NAME
