@@ -57,6 +57,7 @@ pipeline {
                     // Run the container with necessary volumes and DNS settings, and execute the commands
 		    sh """
       			docker run --name $CONTAINER_NAME -d -v /tmp:/tmp -v ${env.WORKSPACE}:/app/workspace --dns=${DNS_IP} $PYTHON_DOCKER_IMAGE tail -f /dev/null
+	 		cd ${env.WORKSPACE}; pwd; tree
                     """
                     //sh """
 		    	// docker run --name $CONTAINER_NAME -d -v /tmp:/tmp --dns=${DNS_IP} $PYTHON_DOCKER_IMAGE tail -f /dev/null
