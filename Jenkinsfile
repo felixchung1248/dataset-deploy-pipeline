@@ -4,15 +4,16 @@ pipeline {
     parameters {
         string(name: 'DATASET_NAME', description: 'Dataset name')
         string(name: 'TICKET_ID', description: 'Ticket ID')
+		string(name: 'DATASET_OWNER', description: 'Dataset owner')
     }
 
     environment {
         // DATAHUB_TOKEN = credentials('datahub-token')
         ZAMMAD_USR = credentials('zammad-usr')
         ZAMMAD_PW = credentials('zammad-pw')
-	DENODO_DOCKER_IMAGE = "${env.DOCKER_REGISTRY}/${env.GOLDEN_PROJECT_NAME}/denodo:latest"  
-	PYTHON_DOCKER_IMAGE = "${env.DOCKER_REGISTRY}/${env.GOLDEN_PROJECT_NAME}/${env.GOLDEN_DOCKER_IMAGE}:${env.GOLDEN_DOCKER_TAG}"
-	DNS_IP = sh(script: "kubectl get service -n kube-system kube-dns -o jsonpath='{.spec.clusterIP}'", returnStdout: true).trim()	
+		DENODO_DOCKER_IMAGE = "${env.DOCKER_REGISTRY}/${env.GOLDEN_PROJECT_NAME}/denodo:latest"  
+		PYTHON_DOCKER_IMAGE = "${env.DOCKER_REGISTRY}/${env.GOLDEN_PROJECT_NAME}/${env.GOLDEN_DOCKER_IMAGE}:${env.GOLDEN_DOCKER_TAG}"
+		DNS_IP = sh(script: "kubectl get service -n kube-system kube-dns -o jsonpath='{.spec.clusterIP}'", returnStdout: true).trim()	
     }
 
     stages {
@@ -53,7 +54,7 @@ pipeline {
             steps {
                 script {					
                     sh """
-                        python3 ${env.WORKSPACE}/data-catalog-deploy.py ticket_id=${env.TICKET_ID} zammad_usr=${env.ZAMMAD_USR} zammad_pw=${env.ZAMMAD_PW} zammad_url=${env.ZAMMAD_URL} dataset=${env.DATASET_NAME} datahub_url=${env.DATAHUB_URL}
+                        python3 ${env.WORKSPACE}/data-catalog-deploy.py ticket_id=${env.TICKET_ID} zammad_usr=${env.ZAMMAD_USR} zammad_pw=${env.ZAMMAD_PW} zammad_url=${env.ZAMMAD_URL} dataset=${env.DATASET_NAME} datahub_url=${env.DATAHUB_URL} dataset_owner=${env.DATASET_OWNER}
                     """
                 }
              }

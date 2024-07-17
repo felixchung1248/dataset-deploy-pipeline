@@ -1,18 +1,33 @@
 # Inlined from /metadata-ingestion/examples/library/dataset_schema.py
 # Imports for urn construction utility methods
-from datahub.emitter.mce_builder import make_data_platform_urn, make_dataset_urn
+from datahub.emitter.mce_builder import make_data_platform_urn, make_user_urn
 from datahub.emitter.mcp import MetadataChangeProposalWrapper
 from datahub.emitter.rest_emitter import DatahubRestEmitter
+# read-modify-write requires access to the DataHubGraph (RestEmitter is not enough)
+from datahub.ingestion.graph.client import DatahubClientConfig, DataHubGraph
+# Imports for metadata model classes
+from datahub.metadata.schema_classes import (
+    OwnerClass,
+    OwnershipClass,
+    OwnershipTypeClass,
+    DatasetPropertiesClass
+)
+import datahub.emitter.mce_builder as builder
 
 import requests
+import logging
 import sys
 from requests.auth import HTTPBasicAuth
 import csv
 from io import StringIO
+from typing import Optional
 
 
 # Imports for metadata model classes
 from datahub.metadata.schema_classes import *
+
+log = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def case1():
@@ -47,6 +62,7 @@ zammad_pw = parameters['zammad_pw']
 zammad_url = parameters['zammad_url']
 dataset = parameters['dataset']
 datahub_url = parameters['datahub_url']
+dataset_owner = parameters['dataset_owner']
 
 response = requests.get(
             f"{zammad_url}/api/v1/ticket_articles/by_ticket/{ticketId}",
@@ -93,9 +109,18 @@ for row in csv_reader:
                     ),
                 )
     fields.append(field)
-    
+
+dataset_properties = DatasetPropertiesClass(description="This table stored the canonical User profile",
+    customProperties={
+         "rating": "-1"
+    })
+
+owner_to_add = make_user_urn(dataset_owner)
+ownership_type = OwnershipTypeClass.TECHNICAL_OWNER
+dataset_urn=builder.make_dataset_urn(platform="Denodo", name=dataset, env="PROD")
+
 event: MetadataChangeProposalWrapper = MetadataChangeProposalWrapper(
-    entityUrn=make_dataset_urn(platform="Denodo", name=dataset, env="PROD"),
+    entityUrn=dataset_urn,
     aspect=SchemaMetadataClass(
         schemaName="customer",  # not used
         platform=make_data_platform_urn("Denodo"),  # important <- platform must be an urn
@@ -111,3 +136,50 @@ event: MetadataChangeProposalWrapper = MetadataChangeProposalWrapper(
 # Create rest emitter
 rest_emitter = DatahubRestEmitter(gms_server=datahub_url)
 rest_emitter.emit(event)
+
+metadata_event = MetadataChangeProposalWrapper(
+    entityUrn=dataset_urn,
+    aspect=dataset_properties,
+)
+
+# Emit metadata! This is a blocking call
+rest_emitter.emit(metadata_event)
+
+
+owner_class_to_add = OwnerClass(owner=owner_to_add, type=ownership_type)
+# owner_class_to_add = OwnerClass(owner=owner_to_add)
+ownership_to_add = OwnershipClass(owners=[owner_class_to_add])
+
+graph = DataHubGraph(DatahubClientConfig(server=datahub_url))
+
+current_owners: Optional[OwnershipClass] = graph.get_aspect(
+    entity_urn=dataset_urn, aspect_type=OwnershipClass
+)
+
+need_write = False
+if current_owners:
+    if (owner_to_add, ownership_type) not in [
+        (x.owner, x.type) for x in current_owners.owners
+    ]:
+        # owners exist, but this owner is not present in the current owners
+        current_owners.owners.append(owner_class_to_add)
+        need_write = True
+else:
+    # create a brand new ownership aspect
+    current_owners = ownership_to_add
+    need_write = True
+
+if need_write:
+    event: MetadataChangeProposalWrapper = MetadataChangeProposalWrapper(
+        entityUrn=dataset_urn,
+        aspect=current_owners,
+    )
+    graph.emit(event)
+    log.info(
+        f"Owner {owner_to_add}, type {ownership_type} added to dataset {dataset_urn}"
+    )
+
+else:
+    log.info(f"Owner {owner_to_add} already exists, omitting write")
+
+
