@@ -1,6 +1,6 @@
 # Inlined from /metadata-ingestion/examples/library/dataset_schema.py
 # Imports for urn construction utility methods
-from datahub.emitter.mce_builder import make_data_platform_urn, make_user_urn
+from datahub.emitter.mce_builder import make_data_platform_urn, make_user_urn,make_tag_urn
 from datahub.emitter.mcp import MetadataChangeProposalWrapper
 from datahub.emitter.rest_emitter import DatahubRestEmitter
 # read-modify-write requires access to the DataHubGraph (RestEmitter is not enough)
@@ -10,7 +10,9 @@ from datahub.metadata.schema_classes import (
     OwnerClass,
     OwnershipClass,
     OwnershipTypeClass,
-    DatasetPropertiesClass
+    DatasetPropertiesClass,
+    GlobalTagsClass,
+    TagAssociationClass
 )
 import datahub.emitter.mce_builder as builder
 
@@ -63,6 +65,7 @@ zammad_url = parameters['zammad_url']
 dataset = parameters['dataset']
 datahub_url = parameters['datahub_url']
 dataset_owner = parameters['dataset_owner']
+dataset_description = parameters['dataset_description']
 
 response = requests.get(
             f"{zammad_url}/api/v1/ticket_articles/by_ticket/{ticketId}",
@@ -99,25 +102,55 @@ for row in csv_reader:
     data_type = row[3]
     is_sensitive = row[2]
     typeClass = switch_dict.get(data_type)()
-    field = SchemaFieldClass(
-                    fieldPath=name,
-                    type=SchemaFieldDataTypeClass(type=typeClass),
-                    nativeDataType=data_type,  # use this to provide the type of the field in the source system's vernacular
-                    description=description,
-                    lastModified=AuditStampClass(
-                        time=1640692800000, actor="urn:li:corpuser:ingestion"
-                    ),
-                )
+    tagList = []
+    if is_sensitive:
+        tagList.append(TagAssociationClass(make_tag_urn('sensitive')))
+        field = SchemaFieldClass(
+                        fieldPath=name,
+                        type=SchemaFieldDataTypeClass(type=typeClass),
+                        nativeDataType=data_type,  # use this to provide the type of the field in the source system's vernacular
+                        description=description,
+                        lastModified=AuditStampClass(
+                            time=1640692800000, actor="urn:li:corpuser:ingestion"
+                        ),
+                        globalTags=GlobalTagsClass(tagList)
+                    )
+    else:
+        field = SchemaFieldClass(
+                        fieldPath=name,
+                        type=SchemaFieldDataTypeClass(type=typeClass),
+                        nativeDataType=data_type,  # use this to provide the type of the field in the source system's vernacular
+                        description=description,
+                        lastModified=AuditStampClass(
+                            time=1640692800000, actor="urn:li:corpuser:ingestion"
+                        )
+                    )
     fields.append(field)
-
-dataset_properties = DatasetPropertiesClass(description="This table stored the canonical User profile",
-    customProperties={
-         "rating": "-1"
-    })
 
 owner_to_add = make_user_urn(dataset_owner)
 ownership_type = OwnershipTypeClass.TECHNICAL_OWNER
 dataset_urn=builder.make_dataset_urn(platform="Denodo", name=dataset, env="PROD")
+
+owner_class_to_add = OwnerClass(owner=owner_to_add, type=ownership_type)
+# owner_class_to_add = OwnerClass(owner=owner_to_add)
+ownership_to_add = OwnershipClass(owners=[owner_class_to_add])
+
+graph = DataHubGraph(DatahubClientConfig(server=datahub_url))
+
+current_owners: Optional[OwnershipClass] = graph.get_aspect(
+    entity_urn=dataset_urn, aspect_type=OwnershipClass
+)
+
+current_dataset_properties: Optional[DatasetPropertiesClass] = graph.get_dataset_properties(entity_urn=dataset_urn)
+
+if current_dataset_properties is None:
+    dataset_properties = DatasetPropertiesClass(description=dataset_description,
+        customProperties={
+         "rating": "-1"
+        })
+else:
+    dataset_properties = DatasetPropertiesClass(description=dataset_description)
+
 
 event: MetadataChangeProposalWrapper = MetadataChangeProposalWrapper(
     entityUrn=dataset_urn,
@@ -144,17 +177,6 @@ metadata_event = MetadataChangeProposalWrapper(
 
 # Emit metadata! This is a blocking call
 rest_emitter.emit(metadata_event)
-
-
-owner_class_to_add = OwnerClass(owner=owner_to_add, type=ownership_type)
-# owner_class_to_add = OwnerClass(owner=owner_to_add)
-ownership_to_add = OwnershipClass(owners=[owner_class_to_add])
-
-graph = DataHubGraph(DatahubClientConfig(server=datahub_url))
-
-current_owners: Optional[OwnershipClass] = graph.get_aspect(
-    entity_urn=dataset_urn, aspect_type=OwnershipClass
-)
 
 need_write = False
 if current_owners:

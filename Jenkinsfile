@@ -5,6 +5,7 @@ pipeline {
         string(name: 'DATASET_NAME', description: 'Dataset name')
         string(name: 'TICKET_ID', description: 'Ticket ID')
 		string(name: 'DATASET_OWNER', description: 'Dataset owner')
+        string(name: 'DATASET_DESCRIPTION', description: 'Dataset description')
     }
 
     environment {
@@ -25,6 +26,12 @@ pipeline {
                     }
                     if (!params.TICKET_ID) {
                         error "The TICKET_ID parameter is missing. Please provide the ticket ID."
+                    }
+                    if (!params.DATASET_OWNER) {
+                        error "The DATASET_OWNER parameter is missing. Please provide the dataset owner."
+                    }
+                    if (!params.DATASET_DESCRIPTION) {
+                        error "The DATASET_DESCRIPTION parameter is missing. Please provide the dataset description."
                     }
                 }
             }
@@ -54,7 +61,7 @@ pipeline {
             steps {
                 script {					
                     sh """
-                        python3 ${env.WORKSPACE}/data-catalog-deploy.py ticket_id=${env.TICKET_ID} zammad_usr=${env.ZAMMAD_USR} zammad_pw=${env.ZAMMAD_PW} zammad_url=${env.ZAMMAD_URL} dataset=${env.DATASET_NAME} datahub_url=${env.DATAHUB_URL} dataset_owner=${env.DATASET_OWNER}
+                        python3 ${env.WORKSPACE}/data-catalog-deploy.py ticket_id=${env.TICKET_ID} zammad_usr=${env.ZAMMAD_USR} zammad_pw=${env.ZAMMAD_PW} zammad_url=${env.ZAMMAD_URL} dataset=${env.DATASET_NAME} datahub_url=${env.DATAHUB_URL} dataset_owner=${env.DATASET_OWNER} dataset_description=${env.DATASET_DESCRIPTION}
                     """
                 }
              }
