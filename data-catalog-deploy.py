@@ -103,7 +103,7 @@ for row in csv_reader:
     is_sensitive = row[2]
     typeClass = switch_dict.get(data_type)()
     tagList = []
-    if is_sensitive:
+    if is_sensitive == 'True':
         tagList.append(TagAssociationClass(make_tag_urn('sensitive')))
         field = SchemaFieldClass(
                         fieldPath=name,
