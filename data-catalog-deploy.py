@@ -149,7 +149,7 @@ if current_dataset_properties is None:
          "rating": "-1"
         })
 else:
-    dataset_properties = DatasetPropertiesClass(description=dataset_description)
+    dataset_properties = DatasetPropertiesClass(description=dataset_description,customProperties=current_dataset_properties.customProperties)
 
 
 event: MetadataChangeProposalWrapper = MetadataChangeProposalWrapper(
